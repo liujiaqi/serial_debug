@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.IO.Ports;
 
@@ -69,6 +70,42 @@ namespace serial_debug
             rxcounter.Text = "0";
             txcounter.Text = "0";
         }
+
+        private void restartPort(object sender, EventArgs e)
+        {
+            if (serialPort1.IsOpen)
+            {
+                switchbt_Click(sender, e);
+                Thread.Sleep(500);
+                switchbt_Click(sender, e);
+            }
+        }
+
+        private void databits_ls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            restartPort(sender, e);
+        }
+
+        private void portsls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            restartPort(sender, e);
+        }
+
+        private void baudls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            restartPort(sender, e);
+        }
+
+        private void parityls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            restartPort(sender, e);
+        }
+
+        private void stopls_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            restartPort(sender, e);
+        }
+
         private void DataReceived_IRQ(object sender, SerialDataReceivedEventArgs e)
         {
             if (serialPort1.BytesToRead == 0) { return; }
@@ -140,6 +177,7 @@ namespace serial_debug
         private void switchbt_Click(object sender, EventArgs e)
         {
             int baudtmp = 9600;
+            int databits = 8;
             if (switchbt.Text == "Open")
             {
                 if (portsls.Text == "")
@@ -150,13 +188,40 @@ namespace serial_debug
                 else
                 {
                     serialPort1.PortName = portsls.Text;
-                    if (int.TryParse(baudls.Text, out baudtmp))
+                    if (int.TryParse(databits_ls.Text.Trim(), out databits))
+                    {
+                        if (databits < 5 || databits > 8)
+                        {
+                            databits = serialPort1.DataBits;
+                            databits_ls.Text = databits.ToString();
+                        }
+                        else
+                        {
+                            serialPort1.DataBits = databits;
+                        }
+                    }
+                    else
+                    {
+                        databits_ls.Text = serialPort1.DataBits.ToString();
+                    }
+                    try
+                    {
+                        serialPort1.Parity = (Parity)parityls.Items.IndexOf(parityls.Text);
+                        serialPort1.StopBits = (StopBits)stopls.Items.IndexOf(stopls.Text);
+                    }
+                    catch (Exception ex)
+                    {
+                        parityls.Text = serialPort1.Parity.ToString();
+                        stopls.Text = serialPort1.StopBits.ToString();
+                    }
+
+                    if (int.TryParse(baudls.Text.Trim(), out baudtmp))
                     {
                         serialPort1.BaudRate = baudtmp;
                     }
                     else
                     {
-                        baudls.Text = "9600";
+                        baudls.Text = serialPort1.BaudRate.ToString();
                     }
                     try
                     {
