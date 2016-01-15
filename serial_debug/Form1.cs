@@ -18,14 +18,9 @@ namespace serial_debug
     public partial class Form1 : Form
     {
         private bool isgraph = false;
-        private CycleBuf<int>[] graphBuf = null;
         private string lastRecRemain = "";
         private string separator = "\r\n";
-        string[] pattern = new string[3] {
-                                @"\[.+\]:REG_ALS_VIS_DATA = ([0-9a-fA-F]+)",
-                                @"\[.+\]:REG_ALS_IR_DATA = ([0-9a-fA-F]+)",
-                                @"\[.+\]:REG_PS1_DATA = ([0-9a-fA-F]+)"
-                            };
+        private Dictionary<dataField, CycleBuf<int>> graphBuf = new Dictionary<dataField, CycleBuf<int>>();
 
         public Form1()
         {
@@ -151,15 +146,15 @@ namespace serial_debug
                     recstr = lastRecRemain + recstr;
                     if(recstr.Contains(separator))
                     {
-                        string[] recItems = recstr.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] recItems = recstr.Split(new string[] { separator }, StringSplitOptions.RemoveEmptyEntries);
                         foreach(string recItem in recItems)
                         {
-                            for (int i = 0; i < 3; i++)
+                            foreach (dataField field in dataFieldsBox.Items)
                             {
-                                GroupCollection collections = new Regex(pattern[i]).Match(recItem).Groups;
+                                GroupCollection collections = new Regex(field.pattern).Match(recItem).Groups;
                                 if (collections.Count == 2)
                                 {
-                                    graphBuf[i].Insert(int.Parse(collections[1].Value, System.Globalization.NumberStyles.AllowHexSpecifier));
+                                    graphBuf[field].Insert(int.Parse(collections[1].Value, System.Globalization.NumberStyles.AllowHexSpecifier));
                                 }
                             }
                             chart1.BeginInvoke(new Action(refreshGraph));
@@ -183,13 +178,16 @@ namespace serial_debug
 
         private void refreshGraph()
         {
-            for (int i = 0; i < 3; i++)
+            chart1.Series.Clear();
+            foreach (dataField dataF in dataFieldsBox.CheckedItems)
             {
-                chart1.Series[i].Points.Clear();
+                Series newSeries = new Series(dataF.name);
+                newSeries.ChartType = SeriesChartType.Spline;
                 for (int x = 0; x < 100; x++)
                 {
-                    chart1.Series[i].Points.AddXY(x, graphBuf[i][x]);
+                    newSeries.Points.AddXY(x, graphBuf[dataF][x]);
                 }
+                chart1.Series.Add(newSeries);
             }
         }
 
@@ -363,13 +361,44 @@ namespace serial_debug
             }
             else
             {
-                if (graphBuf == null)
-                {
-                    graphBuf = new CycleBuf<int>[3] { new CycleBuf<int>(100), new CycleBuf<int>(100), new CycleBuf<int>(100) };
-                }
                 isgraph = true;
                 sw_gh_bt.Text = "Stop";
             }
+        }
+
+        private class dataField
+        {
+            public string name;
+            public string pattern;
+
+            public dataField(string name, string pattern)
+            {
+                this.name = name;
+                this.pattern = pattern;
+            }
+
+            public override string ToString()
+            {
+                return name + " | " + pattern;
+            }
+        }
+
+        private void add_bt_Click(object sender, EventArgs e)
+        {
+            /*
+                @"\[.+\]:REG_ALS_VIS_DATA = ([0-9a-fA-F]+)",
+                @"\[.+\]:REG_ALS_IR_DATA = ([0-9a-fA-F]+)",
+                @"\[.+\]:REG_PS1_DATA = ([0-9a-fA-F]+)"
+            */
+            dataField newdataField = new dataField(dataName.Text.Trim(), dataPattern.Text.Trim());
+            graphBuf.Add(newdataField, new CycleBuf<int>(100));
+            dataFieldsBox.Items.Add(newdataField, true);
+        }
+
+        private void rm_bt_Click(object sender, EventArgs e)
+        {
+            graphBuf.Remove((dataField)(dataFieldsBox.SelectedItem));
+            dataFieldsBox.Items.Remove(dataFieldsBox.SelectedItem);
         }
     }
 }

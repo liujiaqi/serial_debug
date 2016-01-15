@@ -31,9 +31,6 @@
             this.components = new System.ComponentModel.Container();
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
-            System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.send_bt = new System.Windows.Forms.Button();
             this.txbox = new System.Windows.Forms.TextBox();
             this.rxbox = new System.Windows.Forms.TextBox();
@@ -56,6 +53,13 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.dataName = new System.Windows.Forms.TextBox();
+            this.dataPattern = new System.Windows.Forms.TextBox();
+            this.rm_bt = new System.Windows.Forms.Button();
+            this.add_bt = new System.Windows.Forms.Button();
+            this.dataFieldsBox = new System.Windows.Forms.CheckedListBox();
             this.rxbox2 = new System.Windows.Forms.TextBox();
             this.sw_gh_bt = new System.Windows.Forms.Button();
             this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
@@ -302,6 +306,13 @@
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label2);
+            this.tabPage2.Controls.Add(this.label1);
+            this.tabPage2.Controls.Add(this.dataName);
+            this.tabPage2.Controls.Add(this.dataPattern);
+            this.tabPage2.Controls.Add(this.rm_bt);
+            this.tabPage2.Controls.Add(this.add_bt);
+            this.tabPage2.Controls.Add(this.dataFieldsBox);
             this.tabPage2.Controls.Add(this.rxbox2);
             this.tabPage2.Controls.Add(this.sw_gh_bt);
             this.tabPage2.Controls.Add(this.chart1);
@@ -312,6 +323,66 @@
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(691, 197);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 40;
+            this.label2.Text = "Pattern:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(709, 170);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(35, 12);
+            this.label1.TabIndex = 39;
+            this.label1.Text = "Name:";
+            // 
+            // dataName
+            // 
+            this.dataName.Location = new System.Drawing.Point(750, 167);
+            this.dataName.Name = "dataName";
+            this.dataName.Size = new System.Drawing.Size(89, 21);
+            this.dataName.TabIndex = 38;
+            // 
+            // dataPattern
+            // 
+            this.dataPattern.Location = new System.Drawing.Point(750, 194);
+            this.dataPattern.Name = "dataPattern";
+            this.dataPattern.Size = new System.Drawing.Size(170, 21);
+            this.dataPattern.TabIndex = 37;
+            // 
+            // rm_bt
+            // 
+            this.rm_bt.Location = new System.Drawing.Point(845, 327);
+            this.rm_bt.Name = "rm_bt";
+            this.rm_bt.Size = new System.Drawing.Size(75, 23);
+            this.rm_bt.TabIndex = 36;
+            this.rm_bt.Text = "Remove";
+            this.rm_bt.UseVisualStyleBackColor = true;
+            this.rm_bt.Click += new System.EventHandler(this.rm_bt_Click);
+            // 
+            // add_bt
+            // 
+            this.add_bt.Location = new System.Drawing.Point(845, 165);
+            this.add_bt.Name = "add_bt";
+            this.add_bt.Size = new System.Drawing.Size(75, 23);
+            this.add_bt.TabIndex = 35;
+            this.add_bt.Text = "Add";
+            this.add_bt.UseVisualStyleBackColor = true;
+            this.add_bt.Click += new System.EventHandler(this.add_bt_Click);
+            // 
+            // dataFieldsBox
+            // 
+            this.dataFieldsBox.FormattingEnabled = true;
+            this.dataFieldsBox.Location = new System.Drawing.Point(693, 221);
+            this.dataFieldsBox.Name = "dataFieldsBox";
+            this.dataFieldsBox.Size = new System.Drawing.Size(227, 100);
+            this.dataFieldsBox.TabIndex = 34;
             // 
             // rxbox2
             // 
@@ -325,7 +396,7 @@
             // 
             // sw_gh_bt
             // 
-            this.sw_gh_bt.Location = new System.Drawing.Point(776, 386);
+            this.sw_gh_bt.Location = new System.Drawing.Point(778, 418);
             this.sw_gh_bt.Name = "sw_gh_bt";
             this.sw_gh_bt.Size = new System.Drawing.Size(75, 23);
             this.sw_gh_bt.TabIndex = 1;
@@ -351,21 +422,6 @@
             this.chart1.Legends.Add(legend1);
             this.chart1.Location = new System.Drawing.Point(46, 138);
             this.chart1.Name = "chart1";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series1.Legend = "Legend1";
-            series1.Name = "VIS";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series2.Legend = "Legend1";
-            series2.Name = "IR";
-            series3.ChartArea = "ChartArea1";
-            series3.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Spline;
-            series3.Legend = "Legend1";
-            series3.Name = "PS1";
-            this.chart1.Series.Add(series1);
-            this.chart1.Series.Add(series2);
-            this.chart1.Series.Add(series3);
             this.chart1.Size = new System.Drawing.Size(641, 320);
             this.chart1.TabIndex = 0;
             this.chart1.Text = "chart1";
@@ -428,6 +484,13 @@
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Button sw_gh_bt;
         private System.Windows.Forms.TextBox rxbox2;
+        private System.Windows.Forms.CheckedListBox dataFieldsBox;
+        private System.Windows.Forms.Button add_bt;
+        private System.Windows.Forms.Button rm_bt;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox dataName;
+        private System.Windows.Forms.TextBox dataPattern;
     }
 }
 
