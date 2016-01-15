@@ -5,15 +5,28 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Windows.Forms.DataVisualization.Charting;
+using Buffer;
 
 namespace serial_debug
 {
     public partial class Form1 : Form
     {
+        private bool isgraph = false;
+        private CycleBuf<int>[] graphBuf = null;
+        private string lastRecRemain = "";
+        private string separator = "\r\n";
+        string[] pattern = new string[3] {
+                                @"\[.+\]:REG_ALS_VIS_DATA = ([0-9a-fA-F]+)",
+                                @"\[.+\]:REG_ALS_IR_DATA = ([0-9a-fA-F]+)",
+                                @"\[.+\]:REG_PS1_DATA = ([0-9a-fA-F]+)"
+                            };
+
         public Form1()
         {
             InitializeComponent();
@@ -124,10 +137,59 @@ namespace serial_debug
             }
             else
             {
+                string recstr = System.Text.Encoding.Default.GetString(data, 0, data.Length);
                 rxbox.BeginInvoke(new Action(() =>
                 {
-                    rxbox.AppendText(System.Text.Encoding.Default.GetString(data, 0, data.Length));
+                    rxbox.AppendText(recstr);
                 }));
+                rxbox2.BeginInvoke(new Action(() =>
+                {
+                    rxbox2.AppendText(recstr);
+                }));
+                if (isgraph)
+                {
+                    recstr = lastRecRemain + recstr;
+                    if(recstr.Contains(separator))
+                    {
+                        string[] recItems = recstr.Split(new string[] { "\r\n" }, StringSplitOptions.RemoveEmptyEntries);
+                        foreach(string recItem in recItems)
+                        {
+                            for (int i = 0; i < 3; i++)
+                            {
+                                GroupCollection collections = new Regex(pattern[i]).Match(recItem).Groups;
+                                if (collections.Count == 2)
+                                {
+                                    graphBuf[i].Insert(int.Parse(collections[1].Value, System.Globalization.NumberStyles.AllowHexSpecifier));
+                                }
+                            }
+                            chart1.BeginInvoke(new Action(refreshGraph));
+                        }
+                        if (recstr.EndsWith(separator))
+                        {
+                            lastRecRemain = "";
+                        }
+                        else
+                        {
+                            lastRecRemain = recItems.Last();
+                        }
+                    }
+                    else
+                    {
+                        lastRecRemain = recstr;
+                    }
+                }
+            }
+        }
+
+        private void refreshGraph()
+        {
+            for (int i = 0; i < 3; i++)
+            {
+                chart1.Series[i].Points.Clear();
+                for (int x = 0; x < 100; x++)
+                {
+                    chart1.Series[i].Points.AddXY(x, graphBuf[i][x]);
+                }
             }
         }
 
@@ -289,6 +351,24 @@ namespace serial_debug
                 {
                     rxbox.Text = System.Text.Encoding.Default.GetString(data, 0, data.Length);
                 }
+            }
+        }
+
+        private void sw_gh_bt_Click(object sender, EventArgs e)
+        {
+            if (isgraph)
+            {
+                isgraph = false;
+                sw_gh_bt.Text = "Begin";
+            }
+            else
+            {
+                if (graphBuf == null)
+                {
+                    graphBuf = new CycleBuf<int>[3] { new CycleBuf<int>(100), new CycleBuf<int>(100), new CycleBuf<int>(100) };
+                }
+                isgraph = true;
+                sw_gh_bt.Text = "Stop";
             }
         }
     }
