@@ -53,6 +53,12 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.label5 = new System.Windows.Forms.Label();
+            this.pointsNumBox = new System.Windows.Forms.NumericUpDown();
+            this.rmall_bt = new System.Windows.Forms.Button();
+            this.seprBox = new System.Windows.Forms.TextBox();
+            this.label4 = new System.Windows.Forms.Label();
+            this.fieldIsHex = new System.Windows.Forms.CheckBox();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.dataName = new System.Windows.Forms.TextBox();
@@ -66,6 +72,7 @@
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
             this.tabPage2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pointsNumBox)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
@@ -278,7 +285,7 @@
             // 
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(12, 41);
+            this.tabControl1.Location = new System.Drawing.Point(12, 39);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(974, 536);
@@ -301,11 +308,17 @@
             this.tabPage1.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage1.Size = new System.Drawing.Size(966, 510);
             this.tabPage1.TabIndex = 0;
-            this.tabPage1.Text = "tabPage1";
+            this.tabPage1.Text = "Normal";
             this.tabPage1.UseVisualStyleBackColor = true;
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.label5);
+            this.tabPage2.Controls.Add(this.pointsNumBox);
+            this.tabPage2.Controls.Add(this.rmall_bt);
+            this.tabPage2.Controls.Add(this.seprBox);
+            this.tabPage2.Controls.Add(this.label4);
+            this.tabPage2.Controls.Add(this.fieldIsHex);
             this.tabPage2.Controls.Add(this.label2);
             this.tabPage2.Controls.Add(this.label1);
             this.tabPage2.Controls.Add(this.dataName);
@@ -321,8 +334,71 @@
             this.tabPage2.Padding = new System.Windows.Forms.Padding(3);
             this.tabPage2.Size = new System.Drawing.Size(966, 510);
             this.tabPage2.TabIndex = 1;
-            this.tabPage2.Text = "tabPage2";
+            this.tabPage2.Text = "Chart";
             this.tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(730, 372);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(65, 12);
+            this.label5.TabIndex = 46;
+            this.label5.Text = "PointsNum:";
+            // 
+            // pointsNumBox
+            // 
+            this.pointsNumBox.Location = new System.Drawing.Point(801, 370);
+            this.pointsNumBox.Maximum = new decimal(new int[] {
+            1000,
+            0,
+            0,
+            0});
+            this.pointsNumBox.Name = "pointsNumBox";
+            this.pointsNumBox.Size = new System.Drawing.Size(79, 21);
+            this.pointsNumBox.TabIndex = 45;
+            this.pointsNumBox.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
+            // 
+            // rmall_bt
+            // 
+            this.rmall_bt.Location = new System.Drawing.Point(693, 327);
+            this.rmall_bt.Name = "rmall_bt";
+            this.rmall_bt.Size = new System.Drawing.Size(75, 23);
+            this.rmall_bt.TabIndex = 44;
+            this.rmall_bt.Text = "RmAll";
+            this.rmall_bt.UseVisualStyleBackColor = true;
+            this.rmall_bt.Click += new System.EventHandler(this.rmall_bt_Click);
+            // 
+            // seprBox
+            // 
+            this.seprBox.Location = new System.Drawing.Point(801, 397);
+            this.seprBox.Name = "seprBox";
+            this.seprBox.Size = new System.Drawing.Size(79, 21);
+            this.seprBox.TabIndex = 43;
+            this.seprBox.Text = "\\r\\n";
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(730, 400);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(65, 12);
+            this.label4.TabIndex = 42;
+            this.label4.Text = "Separator:";
+            // 
+            // fieldIsHex
+            // 
+            this.fieldIsHex.AutoSize = true;
+            this.fieldIsHex.Location = new System.Drawing.Point(825, 170);
+            this.fieldIsHex.Name = "fieldIsHex";
+            this.fieldIsHex.Size = new System.Drawing.Size(42, 16);
+            this.fieldIsHex.TabIndex = 41;
+            this.fieldIsHex.Text = "Hex";
+            this.fieldIsHex.UseVisualStyleBackColor = true;
             // 
             // label2
             // 
@@ -346,7 +422,7 @@
             // 
             this.dataName.Location = new System.Drawing.Point(750, 167);
             this.dataName.Name = "dataName";
-            this.dataName.Size = new System.Drawing.Size(89, 21);
+            this.dataName.Size = new System.Drawing.Size(69, 21);
             this.dataName.TabIndex = 38;
             // 
             // dataPattern
@@ -368,9 +444,9 @@
             // 
             // add_bt
             // 
-            this.add_bt.Location = new System.Drawing.Point(845, 165);
+            this.add_bt.Location = new System.Drawing.Point(873, 165);
             this.add_bt.Name = "add_bt";
-            this.add_bt.Size = new System.Drawing.Size(75, 23);
+            this.add_bt.Size = new System.Drawing.Size(47, 23);
             this.add_bt.TabIndex = 35;
             this.add_bt.Text = "Add";
             this.add_bt.UseVisualStyleBackColor = true;
@@ -379,6 +455,7 @@
             // dataFieldsBox
             // 
             this.dataFieldsBox.FormattingEnabled = true;
+            this.dataFieldsBox.HorizontalScrollbar = true;
             this.dataFieldsBox.Location = new System.Drawing.Point(693, 221);
             this.dataFieldsBox.Name = "dataFieldsBox";
             this.dataFieldsBox.Size = new System.Drawing.Size(227, 100);
@@ -396,7 +473,7 @@
             // 
             // sw_gh_bt
             // 
-            this.sw_gh_bt.Location = new System.Drawing.Point(778, 418);
+            this.sw_gh_bt.Location = new System.Drawing.Point(792, 424);
             this.sw_gh_bt.Name = "sw_gh_bt";
             this.sw_gh_bt.Size = new System.Drawing.Size(75, 23);
             this.sw_gh_bt.TabIndex = 1;
@@ -451,6 +528,7 @@
             this.tabPage1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
             this.tabPage2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pointsNumBox)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -491,6 +569,12 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.TextBox dataName;
         private System.Windows.Forms.TextBox dataPattern;
+        private System.Windows.Forms.CheckBox fieldIsHex;
+        private System.Windows.Forms.Button rmall_bt;
+        private System.Windows.Forms.TextBox seprBox;
+        private System.Windows.Forms.Label label4;
+        private System.Windows.Forms.Label label5;
+        private System.Windows.Forms.NumericUpDown pointsNumBox;
     }
 }
 

@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
+using System.IO;
 using System.IO.Ports;
 using System.Windows.Forms.DataVisualization.Charting;
 using Buffer;
@@ -19,13 +20,39 @@ namespace serial_debug
     {
         private bool isgraph = false;
         private string lastRecRemain = "";
+        private int dataPointsNum = 100;
         private string separator = "\r\n";
         private Dictionary<dataField, CycleBuf<int>> graphBuf = new Dictionary<dataField, CycleBuf<int>>();
+        private string dataFileCfg = "dataField.cfg";
 
         public Form1()
         {
             InitializeComponent();
             this.serialPort1.DataReceived += new System.IO.Ports.SerialDataReceivedEventHandler(this.DataReceived_IRQ);
+            if (File.Exists(dataFileCfg))
+            {
+                using (StreamReader sr = File.OpenText(dataFileCfg))
+                {
+                    while (sr.Peek() > -1)
+                    {
+                        string[] fieldrd = sr.ReadLine().Split(new string[] { " || " }, StringSplitOptions.RemoveEmptyEntries);
+                        if (fieldrd.Length == 3)
+                        {
+                            dataField newdataField = new dataField(fieldrd[0].Trim(), fieldrd[1].Trim(), fieldrd[2].Trim().ToUpper() == "HEX");
+                            graphBuf.Add(newdataField, new CycleBuf<int>(100));
+                            dataFieldsBox.Items.Add(newdataField, true);
+                        }
+                    }
+                }
+            }
+            this.dataFieldsBox.ItemCheck += delegate (object sender, ItemCheckEventArgs e)
+            {
+                new Thread(() =>
+                {
+                    chart1.BeginInvoke(new Action(refreshGraph));
+                    Thread.Sleep(200);
+                }).Start();
+            };
         }
 
         private void list_ports()
@@ -56,11 +83,20 @@ namespace serial_debug
 
         private void Form1_FormClosing(object sender, EventArgs e)
         {
+
+            using (StreamWriter sw = new StreamWriter(dataFileCfg, false, Encoding.UTF8))
+            {
+                foreach (dataField df in dataFieldsBox.Items)
+                {
+                    sw.WriteLine(df.ToString());
+                }
+            }
             if (serialPort1.IsOpen)
             {
                 serialPort1.Close();
             }
         }
+
         private void refreshbt_Click(object sender, EventArgs e)
         {
             list_ports();
@@ -139,14 +175,18 @@ namespace serial_debug
                 }));
                 rxbox2.BeginInvoke(new Action(() =>
                 {
+                    if (rxbox2.Text.Length > 5000)
+                    {
+                        rxbox2.Text = "";
+                    }
                     rxbox2.AppendText(recstr);
                 }));
                 if (isgraph)
                 {
-                    recstr = lastRecRemain + recstr;
-                    if(recstr.Contains(separator))
+                    lastRecRemain += recstr;
+                    if(lastRecRemain.Contains(separator))
                     {
-                        string[] recItems = recstr.Split(new string[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+                        string[] recItems = lastRecRemain.Split(new string[] { separator }, StringSplitOptions.RemoveEmptyEntries);
                         foreach(string recItem in recItems)
                         {
                             foreach (dataField field in dataFieldsBox.Items)
@@ -154,7 +194,13 @@ namespace serial_debug
                                 GroupCollection collections = new Regex(field.pattern).Match(recItem).Groups;
                                 if (collections.Count == 2)
                                 {
-                                    graphBuf[field].Insert(int.Parse(collections[1].Value, System.Globalization.NumberStyles.AllowHexSpecifier));
+                                    try
+                                    {
+                                        graphBuf[field].Insert(int.Parse(collections[1].Value,
+                                            field.isHex ? System.Globalization.NumberStyles.HexNumber :
+                                                System.Globalization.NumberStyles.Number));
+                                    }
+                                    catch { }
                                 }
                             }
                             chart1.BeginInvoke(new Action(refreshGraph));
@@ -183,7 +229,7 @@ namespace serial_debug
             {
                 Series newSeries = new Series(dataF.name);
                 newSeries.ChartType = SeriesChartType.Spline;
-                for (int x = 0; x < 100; x++)
+                for (int x = 0; x < dataPointsNum; x++)
                 {
                     newSeries.Points.AddXY(x, graphBuf[dataF][x]);
                 }
@@ -358,9 +404,22 @@ namespace serial_debug
             {
                 isgraph = false;
                 sw_gh_bt.Text = "Begin";
+                pointsNumBox.Enabled = true;
+                seprBox.ReadOnly = false;
             }
             else
             {
+                if (pointsNumBox.Value != dataPointsNum)
+                {
+                    dataPointsNum = (int)pointsNumBox.Value;
+                    foreach(dataField bufKey in graphBuf.Keys.ToArray())
+                    {
+                        graphBuf[bufKey] = new CycleBuf<int>(dataPointsNum);
+                    }
+                }
+                pointsNumBox.Enabled = false;
+                separator = seprBox.Text.Replace(@"\r", "\r").Replace(@"\n", "\n").Replace(@"\t", "\t");
+                seprBox.ReadOnly = true;
                 isgraph = true;
                 sw_gh_bt.Text = "Stop";
             }
@@ -370,35 +429,50 @@ namespace serial_debug
         {
             public string name;
             public string pattern;
+            public bool isHex;
 
-            public dataField(string name, string pattern)
+            public dataField(string name, string pattern, bool isHex)
             {
                 this.name = name;
                 this.pattern = pattern;
+                this.isHex = isHex;
             }
 
             public override string ToString()
             {
-                return name + " | " + pattern;
+                return name + " || " + pattern + " || " + (isHex?"Hex":"Dec");
             }
         }
 
         private void add_bt_Click(object sender, EventArgs e)
         {
-            /*
-                @"\[.+\]:REG_ALS_VIS_DATA = ([0-9a-fA-F]+)",
-                @"\[.+\]:REG_ALS_IR_DATA = ([0-9a-fA-F]+)",
-                @"\[.+\]:REG_PS1_DATA = ([0-9a-fA-F]+)"
-            */
-            dataField newdataField = new dataField(dataName.Text.Trim(), dataPattern.Text.Trim());
-            graphBuf.Add(newdataField, new CycleBuf<int>(100));
+            foreach (dataField df in dataFieldsBox.Items)
+            {
+                if (dataName.Text.Trim() == df.name)
+                {
+                    MessageBox.Show("This field name is already exist.");
+                    return;
+                }
+            }
+            dataField newdataField = new dataField(dataName.Text.Trim(), dataPattern.Text.Trim(), fieldIsHex.Checked);
+            graphBuf.Add(newdataField, new CycleBuf<int>(dataPointsNum));
             dataFieldsBox.Items.Add(newdataField, true);
         }
 
         private void rm_bt_Click(object sender, EventArgs e)
         {
+            if(dataFieldsBox.SelectedItem == null)
+            {
+                return;
+            }
             graphBuf.Remove((dataField)(dataFieldsBox.SelectedItem));
             dataFieldsBox.Items.Remove(dataFieldsBox.SelectedItem);
+        }
+
+        private void rmall_bt_Click(object sender, EventArgs e)
+        {
+            dataFieldsBox.Items.Clear();
+            graphBuf.Clear();
         }
     }
 }
